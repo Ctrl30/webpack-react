@@ -1,18 +1,11 @@
 const path = require("path");
-const HTMLWebpackPlugin = require("html-webpack-plugin");
 const FriendlyErrorsWebpackPlugin = require("friendly-errors-webpack-plugin");
 const webpack = require("webpack");
-const autoprefixer = require("autoprefixer");
-
-const appSrc = path.resolve(__dirname, "../src");
-const appDist = path.resolve(__dirname, "../dist");
-const appPublic = path.resolve(__dirname, "../public");
-const appIndex = path.resolve(appSrc, "index");
-const appEjs = path.resolve(appPublic, "index.ejs");
-const appHtml = path.resolve(appPublic, "index.html");
+const styleRules = require('./styleRules');
+const appDist = path.resolve(__dirname, "../../dist");
+const appPublic = path.resolve(__dirname, "../../public");
 
 module.exports = {
-  entry: appIndex,
   mode: "development",
   devtool: "source-map",
   output: {
@@ -67,6 +60,9 @@ module.exports = {
     未来保证在同一域名下，请求一些在其他域名下的api接口时会用到该配置。
     dev-server使用http-proxy-middleware包
      */
+    // module: {
+    //   rules: styleRules,
+    // },
     proxy: {
       "/api": {
         target: "http://10.11.110.110:8080/",
@@ -77,96 +73,7 @@ module.exports = {
       },
     },
   },
-  module: {
-    rules: [
-      {
-        test: /\.(js|jsx|tsx)$/,
-        loader: "babel-loader",
-        include: [appSrc],
-        exclude: /node_modules/,
-        options: {
-          plugins: [
-            [
-              "import",
-              {
-                libraryName: "antd",
-                style: true,
-              },
-            ],
-          ],
-        },
-      },
-      /**
-       css-loader：处理 css 文件中的 url() 等。
-       style-loader：将 css 插入到页面的 style 标签。
-       less-loader：是将 less 文件编译成 css。
-       postcss-loader：可以集成很多插件，用来操作 css。我们这里使用它集成 autoprefixer 来自动添加前缀。
-       */
-      {
-        test: /\.(css|less)$/,
-        exclude: /node_modules/,
-        use: [
-          {
-            loader: "style-loader",
-          },
-          {
-            loader: "css-loader", //配置css modules
-            options: {
-              sourceMap: true,
-              modules: true,
-              localIdentName: "[name]_[local].[hash:8]",
-            },
-          },
-          {
-            loader: "postcss-loader",
-            options: {
-              plugins: () => [autoprefixer()],
-            },
-          },
-          {
-            loader: "less-loader",
-            options: {
-              javascriptEnabled: true,
-            },
-          },
-        ],
-      },
-      {
-        test: /\.(css|less)$/,
-        include: /node_modules/,
-        use: [
-          {
-            loader: "style-loader",
-          },
-          {
-            loader: "css-loader", //css module
-            options: {},
-          },
-          {
-            loader: "postcss-loader",
-            options: {
-              plugins: () => [autoprefixer()],
-            },
-          },
-          {
-            loader: "less-loader",
-            options: {
-              javascriptEnabled: true,
-            },
-          },
-        ],
-      },
-      {
-        test: /\.(png|svg|jpg|gif)$/,
-        use: ["file-loader"],
-      },
-    ],
-  },
   plugins: [
-    new HTMLWebpackPlugin({
-      template: appEjs,
-      filename: "index.html",
-    }),
     new FriendlyErrorsWebpackPlugin(),
     // 启用热加载
     new webpack.HotModuleReplacementPlugin(),
@@ -175,10 +82,4 @@ module.exports = {
       React: "react",
     }),
   ],
-  resolve: {
-    extensions: [".js", ".ts", ".tsx", ".jsx"],
-    alias: {
-      "~": appSrc,
-    },
-  },
 };
